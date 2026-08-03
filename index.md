@@ -175,8 +175,8 @@ erDiagram
     article ||--|{ comment: contains
     topic }|--o{ article: contains
     topic }o--o{ user: prefers
-    user }|--|| article: author
-    user }|--|| comment: author
+    user ||--o{ article: writes
+    user ||--o{ comment: writes
 
 ```
 
