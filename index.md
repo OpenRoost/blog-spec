@@ -42,48 +42,49 @@ Here is a starter repository template that may help:
 
 ## Challenge: Functional views
 
-It's ok not to return **actual** content for now. Ensure all the routes are
-available and provide correct data. Use anything you like to return within an
-HTTP response.
+At this stage, route handlers may return placeholder content. The required paths
+and HTTP methods must already be available, and each path must have the
+described purpose.
 
-- `/about/`: Provides a regular text for a user, describing the
-  functionalities of the django site.
-- `/`: A site's homepage. This will contain a list of blogs published
-  via the django site.
-- `/<article>/`: A single article detail view. The URL contains a dynamic part
-  in it. This will be used to fetch a single article from the database.
-- `/<article>/comment/`: This view will be used to add comments to an article.
-- `/create/`: A article creation form.
-- `/<article>/update/`: A view to update existing article data.
-- `/<article>/delete/`: A view to confirm article deletion.
-- `/topics/`: A list of topics available on the site.
-- `/topics/<topic>/add/`: Add the selected topic to the preferred topics list.
-- `/topics/<topic>/remove/`: Removes the selected topic from preferred.
-- `/topics/<topic>/subscribe/`: A view to subscribe for a topic.
-- `/topics/<topic>/unsubscribe/`: A view to unsubscribe from a topic.
-- `/profile/<str:username>/`: A site user's personal page.
-- `/set-password/`: This route will be used to change users' credential data.
-- `/set-userdata/`: This route will be user to change users' data.
-- `/deactivate/`: Account deactivation (deletion) view.
-- `/register/`: This view contains a user registration form.
-- `/login/`: This view contains a login form.
-- `/logout/`: Logout page. This view should redirect the user back to the
-  homepage.
+Paths use `{name}` for implementation-neutral dynamic parameters.
+
+| Method | Path | Access | Purpose |
+| --- | --- | --- | --- |
+| `GET` | `/about/` | public | Describe the site and its functionality |
+| `GET` | `/` | public | Show the article list |
+| `GET` | `/{article}/` | public | Show one article |
+| `POST` | `/{article}/comment/` | authenticated | Add a comment to an article |
+| `GET`, `POST` | `/create/` | authenticated | Display and submit the article creation form |
+| `GET`, `POST` | `/{article}/update/` | author | Display and submit the article update form |
+| `GET`, `POST` | `/{article}/delete/` | author | Display and submit article deletion confirmation |
+| `GET` | `/topics/` | public | List available topics |
+| `POST` | `/topics/{topic}/add/` | authenticated | Add a preferred topic |
+| `POST` | `/topics/{topic}/remove/` | authenticated | Remove a preferred topic |
+| `POST` | `/topics/{topic}/subscribe/` | authenticated | Enable notifications for a preferred topic |
+| `POST` | `/topics/{topic}/unsubscribe/` | authenticated | Disable notifications for a preferred topic |
+| `GET` | `/profile/{username}/` | public | Show a user's public profile |
+| `GET`, `POST` | `/set-password/` | authenticated | Display and submit password changes |
+| `GET`, `POST` | `/set-userdata/` | authenticated | Display and submit profile changes |
+| `POST` | `/deactivate/` | authenticated | Deactivate the current account |
+| `GET`, `POST` | `/register/` | anonymous | Display and submit registration |
+| `GET`, `POST` | `/login/` | anonymous | Display and submit authentication |
+| `POST` | `/logout/` | authenticated | End the current authenticated session |
+
+Operations that change persistent state must not be performed by `GET`
+requests.
 
 > [!WARNING]
 > Optional task(s)
 >
-> - `/archive/<int:year>/<int:month>/`: This view provides a list of articles
-    published on a specified month of a specified year. This view should apply
-    date validation and raise `Http404` for invalid paths. The valid date is a
-    year's 4-digits form followed by one or two digits representing a month.
-    Month range should be limited as [1..12], leading zero may be omitted.
-    Valid URLs are:
+> - `GET /archive/{year}/{month}/` lists articles created during the specified
+>   month. The year must use four digits. The month range is `1..12` and may
+>   include a leading zero. Invalid values return `404 Not Found`.
+>
+>   Examples:
 >
 >       /archive/2023/1/
 >       /archive/2023/01/
 >       /archive/2023/10/
->
 
 ## Challenge: Data models
 
@@ -182,136 +183,116 @@ erDiagram
 
 ## Challenge: ORM
 
-Update existing views to represent entities that are actually stored inside the
-project's database.
+Connect the web interface to persistent domain data.
 
-- `/`: should represent a list of existing articles.
-- `/<article>/`: should represent a single existing article.
-- Detail view should get a list of article-related comments.
-- `/profile/<str:username>/`: should contain information about user and a list
-  of articles authored by this user.
-- All views related to a single entity (*detail*, *update*, *delete*,
-  *profile*) should raise `Http404` in case entity could not be fetched.
-
-> [!TIP]
-> It's common to store dedicated functions/classes that supports some specific
-> business logic in a separate module called `services.py` or `utils.py` within
-> an application directory.
+- `GET /` returns the stored article collection.
+- `GET /{article}/` returns the requested stored article and its comments.
+- `GET /profile/{username}/` returns public profile information and articles
+  authored by that user.
+- Requests for an article or profile that does not exist return
+  `404 Not Found`.
+- How queries and business logic are organized in modules, services, classes,
+  or functions is an implementation choice.
 
 > [!WARNING]
 > Optional task(s)
 >
-> - Create a service to fetch articles ordered by specified user preferences.
-    This means, topics preferred by a user affect articles order. Queryset
-    should be ordered in a way, to have articles with most corresponding topics
-    at the begging. However, the publication date should be preferred over
-    the topic.
+> - Personalize article ordering using the authenticated user's preferred
+>   topics while preserving publication recency as the primary ordering rule.
 
-## Challenge: Templates
+## Challenge: Server-rendered interface
 
 > [!TIP]
-> Helpful link:
+> The following Bootstrap-based visual reference may be useful:
 > [Bootstrap template](https://github.com/devsforge/css-bootstrap-blog)
 
-> [!IMPORTANT]
-> Links related to user data **may be** placeholders for now.
+The rendering technology and template organization are implementation choices.
+The requirements below describe information and navigation visible to users.
 
 **General**
 
-- **All** templates should be inherited from the `base.html` template.
-- Each page has a descriptive title HTML tag, which included `| Blog`
-  suffix, e.g. "Articles | Blogs," "Sample | Blog," "Login | Blog" etc.
-- Each page should contain a link to homepage (`/` URL route).
-- Each page contains a list of registered topics. Each view of this kind
-  filters only articles of a relevant topic. This should be implemented
-  with a custom template context processor.
-- Replace content block for *about* page with some static content.
-- Application-level templates should be located within appropriate
-  applications.
+- Pages share a consistent site layout and navigation.
+- Every page includes a link to the homepage.
+- Every page has a descriptive HTML title ending with `| Blog`, for example
+  `Articles | Blog`, `Sample | Blog`, or `Login | Blog`.
+- Relevant pages expose the registered topics. Following a topic link filters
+  the article list to that topic.
+- The about page displays static information describing the site.
+- User-controlled content must be escaped or sanitized before it is rendered as
+  HTML. Raw unsanitized user-provided HTML must never be injected into a page.
 
 > [!WARNING]
 > Optional task(s)
 >
-> - Each page should contain a list of links to archive views for the last year. 
-> - Each page should contain an inclusion-block(s) with the following links:
->   - `/registration/`: new user registration form
->   - `/login/`: user login form
->   - `/create/`: article creation page
+> - Relevant pages may include links to archive pages for the last year.
+> - Common navigation may include contextual links to `/register/`, `/login/`,
+>   and `/create/` according to the current authentication state.
 
-**Articles list**
+**Article list**
 
-- The main page contains a list of published articles.
-- Each article entity is rendered using a custom template tag.
-- `article` template tag renders information about an article object:
-    - article title
-    - article content (trimmed to \~50 characters)
-    - article creation date
-    - related topics (three topics or fewer)
-    - number of related comments
+The homepage displays available articles. Each article summary contains:
+
+- article title
+- a short content preview, approximately 50 characters
+- creation date and time
+- up to three related topics
+- number of comments
+
+Article summaries should use a consistent presentation, but the mechanism used
+to reuse markup or rendering logic is not prescribed.
 
 **Article details**
 
-> [!IMPORTANT]
-> Article update and deletion views **would not** affect data for now.
+The article page displays:
 
-- A article detail page contains links to **update** or **delete**
-  current article.
-- Page provides information about the article:
-    - Article title
-    - Creation date
-    - Author name
-    - Related topics
-    - Article content
-- Page contains a list of related comments.
-- Each comment contains:
-    - Author name
-    - Comment creation time
-    - Comment message
+- article title
+- creation date and time
+- author name with a link to the public profile
+- related topics
+- complete article content
+- update and delete actions when the current user is permitted to use them
+- related comments
+
+Each comment displays:
+
+- author name
+- creation date and time
+- message
 
 **Profile page**
 
-- Author page contains information about the author:
-    - First name
-    - Last name
+A public profile displays:
 
-  Add more information, if needed.
+- username
+- first name
+- last name
+- articles authored by that user
 
-- Author page contains a list of articles created by this author.
-
-- Author page contains buttons/links to change user data and password or
-  deactivate a user's account.
+When a user views their own profile, the page also provides access to profile
+editing, password change, and account deactivation actions.
 
 **Forms**
 
-> [!IMPORTANT]
-> There is **no need** to add actual forms now. They will be generated by
-> Django. This section describes the final view of these pages. It's ok just to
-> create a dedicated template for future use.
-
-- `/register/` page contains a new user registration form. It should
-  take inputs from the user:
+- `/register/` collects:
     - username
     - email
     - password
-    - confirm password
-- `/login/` page contains a user login form. It should take the inputs from the
-  user:
+    - password confirmation
+- `/login/` collects:
     - username
     - password
-- `/create/` and `/<article>/update/` pages contain a form to collect an
-  article's data:
+- `/create/` and `/{article}/update/` collect:
     - title
-    - relevant topics
+    - one or more relevant topics
     - content
-- `/<article>/delete` page contains a simple delete confirmation form.
-- Change password form has two fields:
-    - new password
-    - confirm password
-- Change user's data form collects all information, that can be changed, e.g.
-  `username`, `first name`, `last name` etc.
-- User preferences page contains a list of available topics. Users can mark
-  some topics as preferred. Also, for preferred topics an option to *subscribe*
-  for the newsletters becomes available.
+- `/{article}/delete/` provides explicit deletion confirmation.
+- `/set-password/` collects the new password and its confirmation.
+- `/set-userdata/` collects mutable profile information.
+- The topic-preferences interface lists available topics and allows the user to
+  maintain preferences and notification subscriptions.
+
+Validation errors must be displayed near enough to the relevant form or field
+for a user to understand and correct the input.
 
 ## Challenge: Articles' slugs
 
@@ -334,79 +315,75 @@ project's database.
 
 ## Challenge: Auth forms
 
-- Create a form for new users registration with required fields:
-    - `username`
-    - `email`
-    - `password`
-    - `confirm password`
-- `username` value should be validated against existing values.
-- `password` and `confirm password` values should match.
-- Create a form to log in a user.
-- Validation errors are to be rendered on the template.
+Implement registration and login behavior using the forms described by the web
+interface contract.
+
+- Registration requires `username`, `email`, `password`, and password
+  confirmation.
+- A username that is already in use must be rejected.
+- Password and password-confirmation values must match.
+- Invalid input redisplays the form with actionable validation errors.
+- Successful registration redirects the new user to `/login/`.
+- Login accepts the user's credentials and establishes authenticated access.
 
 ## Challenge: Authentication
 
-- For anonymous users `/register/` and `/login/` links should be visible
-  in navbar.
-- For authenticated users `/logout/` and `/create/` links should be
-  visible in navbar.
-- If an authenticated user is admin or stuff, they should see a link to
-  the admin page.
-- `/register/`: Users should provide all required information about
-  them: desired username and email. Name data (both first and last) is
-  optional. After user creation they should be redirected to the login page 
-  to perform an authentication process. Invalid form should provide
-  information about error(s).
-- `/login/`: Users should provide their credentials to login. In case
-  login is successful they should be redirected to their profile (if no
-  `?next=url` query string available).
-- `/create/`: Only authenticated users should be able to visit this
-  page. In case an anonymous user is trying to request this view, they
-  should be redirected to the login view first, and after successful
-  authentication get back to article creation. Then an article is
-  created, it should be authored by the currently authenticated user.
-- `/<article>/comment/`: Currently authenticated user should be
-  referenced as a comment's author.
-- Articles may be modified or deleted only by their authors from the detail
-  article page. However, admins can still perform article actions from the
-  admin page.
-- User-related paths are restricted for non-authorized users.
-    - `/set-password/`
-    - `/set-userdata/`
-- `POST` request `/deactivate/` should mark current authenticated user
-  as *deleted* and log them user.
-- Authenticated users should be able to adjust their preferred topics
-  lists.
-- Authenticated users should be able to **subscribe** or **unsubscribe**
-  for a selected topic.
+The web interface distinguishes anonymous users, authenticated users, resource
+authors, and administrators.
+
+| Action | Anonymous | Authenticated user | Author | Administrator |
+| --- | --- | --- | --- | --- |
+| Read articles, topics, comments, and public profiles | yes | yes | yes | yes |
+| Create an article | no | yes | yes | yes |
+| Comment on an article | no | yes | yes | yes |
+| Edit or delete an article | no | no | yes | yes |
+| Edit own profile or password | no | yes | yes | yes |
+| Manage own topic preferences | no | yes | yes | yes |
+
+- Anonymous navigation exposes registration and login actions.
+- Authenticated navigation exposes logout and article creation actions.
+- An anonymous user requesting a protected page is redirected to `/login/`.
+  The application should preserve the originally requested destination so the
+  user can return to it after successful authentication.
+- After login, the user is redirected to that preserved destination when one
+  exists; otherwise they are redirected to their profile.
+- Article creation records the current authenticated user as the author.
+- Comment creation records the current authenticated user as the author.
+- Article update and deletion are restricted to the article author.
+  Administrators may manage articles through administrative capabilities, but
+  no particular administration framework or route is prescribed.
+- `/set-password/`, `/set-userdata/`, `/deactivate/`, and topic-preference
+  operations are restricted to the current authenticated user.
+- Logout ends the current authenticated session and redirects to the homepage.
+- Deactivation prevents the user from authenticating again while preserving
+  their articles, comments, and referential integrity.
 
 > [!WARNING]
 > Optional task(s)
 >
-> - Adjust the order of an article list according to authenticated user
-    preferences. For anonymous users keep the default ordering.
-> - Implement account reactivation behavior. The exact workflow does not
-    matter. The sample scenario is to collect email for the user and check it
-    for existing in the database. After that create a request for admin to
-    activate an account and send a confirmation email, when all is done.
+> - Adjust article ordering according to authenticated user preferences while
+>   keeping the default ordering for anonymous users.
+> - Implement account reactivation. The workflow may vary, but it must verify
+>   the account owner before restoring authentication access.
 
 ## Challenge: Article-related forms
 
-- Implement an article creation form. This form will be used to create new
-  articles and to update existing ones.
-- Each created article should have at least one related topic.
-- Implement a comment form to gather a comment from a user.
-- Only `POST` requests to `/<article>/comment/` are allowed from this
-  moment.
-- Implement functionality:
-    - article creation
-    - article update
-    - article comment (create a related comment)
-    - article deletion
-- Only authenticated users can create articles.
-- Article can be edited only by its author.
-- Article can be deleted only by its author.
-- Only authenticated users can comment on articles.
+Implement persistent article and comment operations through the server-rendered
+web interface.
+
+- Article creation and update use the same set of article fields.
+- Every created or updated article has at least one related topic.
+- `POST /create/` creates an article owned by the current authenticated user.
+- `POST /{article}/update/` updates an article only when the current user is its
+  author.
+- `POST /{article}/delete/` deletes an article only after explicit confirmation
+  and only when the current user is its author.
+- `POST /{article}/comment/` creates a comment owned by the current
+  authenticated user.
+- Anonymous users cannot create, update, or delete articles and cannot create
+  comments.
+- Invalid submissions preserve user-entered data where practical and display
+  validation errors.
 
 ## Challenge: Class-Based Views
 
