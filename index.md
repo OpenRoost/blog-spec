@@ -416,53 +416,140 @@ project's database.
 > [!NOTE]
 > It's ok to use built-in Django CBV if needed.
 
-## Challenge: Serializers
+## Challenge: REST API
 
-**Article topic**
+The application must expose a REST API that mirrors the core blog operations.
+The implementation may use any HTTP or serialization library. Authentication
+transport, session management, token format, and other framework-specific
+mechanisms are implementation choices.
 
-- Topic serializer is for read-only purposes only. Topics can be created
-  via the admin page only.
-- Serialized data should contain all available data, e.g. `pk`, `title`,
-  `description`.
+### Resource representations
 
-**Article comment**
+**Topic**
 
-- article comment serializer can perform both reading and writing
-  operations. But it can't be used to *update* or *delete* comment.
-- Random, or pre-defined user may be used as comment's author for now.
-  This will be fixed in the future.
+A topic representation contains:
+
+- `id` — read-only identifier
+- `title` — unique title
+- `description` — short description
+
+Topics are read-only through the public API.
 
 **Article**
 
-- article serializer provides full access to articles. All operations
-  are available: list, retrieve, create, update, and destroy.
+An article representation contains:
 
-**User**
+- `id` — read-only identifier
+- `title`
+- `content`
+- `author` — read-only public user representation
+- `topics` — one or more topic identifiers or representations
+- `created_at` — read-only creation timestamp
+- `updated_at` — read-only update timestamp
 
-- User serializer provides full access to site users' data. All
-  operations are available for now: list, retrieve, create, update, and
-  destroy. This behavior will be fixed in the future to prevent
-  unauthorized data modifications.
+Creating or updating an article accepts `title`, `content`, and `topics`.
+The authenticated user is always used as the author; a client-provided author
+value must not override it.
 
-## Challenge: API views
+**Comment**
 
-All blog-site functionality is to be mirrored via REST API.
+A comment representation contains:
 
-> [!NOTE]
-> It's ok to pass *pre-defined* user as argument in request's body.
-> This will be fixed in the next challenge.
+- `id` — read-only identifier
+- `article` — read-only article identifier
+- `author` — read-only public user representation
+- `message`
+- `created_at` — read-only creation timestamp
 
-## Challenge: Authentication and Permissions
+Comments can be listed and created through the API. Updating or deleting a
+comment is outside the core API scope. The authenticated user is always used
+as the comment author.
 
-- Implement authentication system for REST API.
-    - For non-authenticated users it is possible to create a new account
-    - For non-authenticated users it is possible to collect authentication
-      data.
-- Access to user data is restricted. Authorized users can manipulate
-  only their own data (e.g. `retrieve`, `update`).
-- Admins can retrieve all user's data (`list`), but can't change them
-  via REST API. However, it is still possible via the admin page.
-- Authorized users can `create` articles or `update` and `delete`
-  articles created by them.
-- Authorized users can add comments to a specified article.
-- Authorized users can adjust their topic preferences.
+**User and profile**
+
+A public user representation contains:
+
+- `username`
+- `first_name`
+- `last_name`
+
+The authenticated user's private profile additionally exposes `email`.
+Credentials and password hashes must never be returned by the API.
+
+**Topic preference**
+
+A topic-preference representation contains:
+
+- `topic`
+- `notifications_enabled`
+
+The preference belongs to the authenticated user and must not accept a user
+identifier from the client.
+
+### Endpoints
+
+Paths below use `{name}` for implementation-neutral dynamic path parameters.
+
+| Method | Path | Access | Behavior |
+| --- | --- | --- | --- |
+| `POST` | `/api/users/` | public | Register a new user |
+| `GET` | `/api/users/{username}/` | public | Read a public profile |
+| `GET` | `/api/users/me/` | authenticated | Read the current user's private profile |
+| `PATCH` | `/api/users/me/` | authenticated | Update the current user's mutable profile data |
+| `GET` | `/api/users/` | administrator | List users for administrative purposes |
+| `POST` | `/api/auth/login/` | public | Submit credentials and establish authenticated API access |
+| `POST` | `/api/auth/logout/` | authenticated | End or invalidate authenticated API access when applicable |
+| `GET` | `/api/articles/` | public | List articles |
+| `POST` | `/api/articles/` | authenticated | Create an article owned by the current user |
+| `GET` | `/api/articles/{article_id}/` | public | Retrieve an article |
+| `PATCH` | `/api/articles/{article_id}/` | author | Update an owned article |
+| `DELETE` | `/api/articles/{article_id}/` | author | Delete an owned article |
+| `GET` | `/api/articles/{article_id}/comments/` | public | List article comments |
+| `POST` | `/api/articles/{article_id}/comments/` | authenticated | Add a comment as the current user |
+| `GET` | `/api/topics/` | public | List topics |
+| `GET` | `/api/topics/{topic_id}/` | public | Retrieve a topic |
+| `GET` | `/api/preferences/` | authenticated | List the current user's topic preferences |
+| `PUT` | `/api/preferences/{topic_id}/` | authenticated | Add a topic to the preferred list |
+| `PATCH` | `/api/preferences/{topic_id}/` | authenticated | Change subscription state for a preferred topic |
+| `DELETE` | `/api/preferences/{topic_id}/` | authenticated | Remove a preferred topic |
+
+`PATCH /api/preferences/{topic_id}/` accepts `notifications_enabled`. Enabling
+notifications for a topic that is not currently preferred must fail validation;
+clients must add the preference first.
+
+### Authentication and authorization
+
+- Registration and authentication operations are available to anonymous
+  clients.
+- Reading articles, topics, comments, and public profiles does not require
+  authentication.
+- Creating articles or comments requires authentication.
+- An authenticated user may update or delete only articles they authored.
+- An authenticated user may read and modify only their own private profile and
+  topic preferences.
+- Administrators may list user accounts through `GET /api/users/`, but this
+  administrative access does not grant API endpoints for modifying another
+  user's private profile.
+- The authentication mechanism itself is not prescribed. Session cookies,
+  opaque tokens, signed tokens, or another secure mechanism may be used as long
+  as the observable access rules are equivalent.
+
+### Response behavior
+
+Implementations must use HTTP status codes consistently:
+
+- `200 OK` for successful retrieval and update operations that return content.
+- `201 Created` after successfully creating a user, article, or comment.
+- `204 No Content` after successful deletion or logout when no response body is
+  needed.
+- `400 Bad Request` when request data fails validation. The response must
+  identify the invalid input well enough for a client to correct it.
+- `401 Unauthorized` when an API operation requires authentication and valid
+  authentication is missing or rejected.
+- `403 Forbidden` when an authenticated user attempts an operation they are not
+  permitted to perform.
+- `404 Not Found` when the requested resource does not exist.
+
+API authorization failures return HTTP responses rather than browser login
+redirects. A request body must never be trusted to select the acting user when
+that identity can be derived from the authenticated request context.
