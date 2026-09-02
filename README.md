@@ -1,22 +1,32 @@
 # Blog Site Specification
 
-This repository contains the specification for the Blog Site project,
-intended for educational purposes.
+This repository contains the framework-agnostic specification for the Blog
+Site educational project. The project is intended for students on IT courses
+who are learning how to design and implement web applications.
 
 ## Project Description
 
-The project aims to develop a robust and user-friendly web application using
-the Django framework. The primary goal is to create a blogging platform that
-allows users to publish and manage articles on various topics. The application
-will provide an intuitive interface for authors to compose and format their
-articles, while also offering a seamless reading experience for visitors.
+The Blog Site is a blogging platform where users can publish and manage
+articles, organize them by topic, interact through comments, and maintain
+personal preferences and subscriptions.
+
+The specification defines the required product behavior and constraints rather
+than a particular implementation. An implementation may use Django, Flask,
+aiohttp, another web framework, or a different suitable technology stack.
+Framework-specific APIs, project layouts, libraries, and internal architecture
+are implementation choices unless a requirement explicitly states otherwise.
+
+Course material may add framework-specific exercises on top of this project,
+but those exercises are not part of the canonical Blog Site specification.
 
 ## Repository Structure
 
 This repository contains only the project specification and related documents,
-such as UML diagrams, data fixtures etc. No actual code implementation here.
-Anyone can refer to this documentation to understand the project requirements
-and design before starting the implementation phase.
+such as domain diagrams and supporting assets. It does not contain a canonical
+application implementation.
+
+Use these documents to understand what the Blog Site must do before selecting
+or applying implementation-specific techniques.
 
 ## Documents
 
