@@ -300,7 +300,7 @@ for a user to understand and correct the input.
 > This is an optional challenge in addition to:
 > 
 > - [Challenge: Functional views](#challenge-functional-views)
-> - [Challenge: Templates](#challenge-templates)
+> - [Challenge: Server-rendered interface](#challenge-server-rendered-interface)
 > - [Challenge: Data models](#challenge-data-models)
 > - [Challenge: ORM](#challenge-orm)
 
