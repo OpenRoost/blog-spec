@@ -1,44 +1,67 @@
 # Blog Site
 
-The project aims to develop a robust and user-friendly web application using
-the Django framework. The primary goal is to create a blogging platform that
-allows users to publish and manage articles on various topics. The application
-will provide an intuitive interface for authors to compose and format their
-articles, while also offering a seamless reading experience for visitors.
+The Blog Site is an educational web project for students learning to design and
+implement web applications. The project defines a blogging platform where users
+can publish and manage articles, organize content by topic, interact through
+comments, and maintain personal preferences and subscriptions.
+
+This specification defines required product behavior and constraints. It does
+not prescribe a web framework, persistence library, template engine, project
+layout, or internal architecture. Implementations may use Django, Flask,
+aiohttp, another web framework, or any other suitable technology stack.
+Framework-specific APIs and conventions are implementation details unless a
+requirement explicitly states otherwise.
+
+Framework-specific courses may add exercises on top of this specification, but
+such exercises do not change the canonical Blog Site requirements.
+
+## Specification Conventions
+
+The terms `must`, `should`, and `may` are used consistently throughout this
+specification:
+
+- **must** identifies a requirement that every conforming implementation has to
+  satisfy;
+- **should** identifies recommended behavior that may be changed when an
+  implementation has a justified reason;
+- **may** identifies optional behavior or an implementation choice.
+
+## Core Terminology
+
+- **User**: a person represented by an account in the Blog Site.
+- **Anonymous user**: a visitor who is not currently authenticated.
+- **Authenticated user**: a user whose identity has been established by the
+  application.
+- **Author**: the user who created a particular Article or Comment. Ownership
+  rules referring to an author apply to that specific resource.
+- **Administrator**: a privileged user allowed to perform administrative
+  operations defined by the specification or a particular implementation.
+- **Article**: the primary published content item. `Article` is the canonical
+  term; implementations should not treat `blog` or `post` as separate domain
+  entities unless an extension explicitly introduces them.
+- **Topic**: a category associated with Articles and user preferences.
+- **Comment**: a user-authored message associated with one Article.
 
 ## Key Features
 
 ### User Registration and Authentication
 
-The application will provide user registration and authentication
-functionality, allowing individuals to create accounts, log in, and manage
-their profile information. This feature will enable authors to have
-personalized accounts and maintain ownership of their published articles.
+The application must support user registration and authentication. Users can
+create accounts, authenticate, and manage their own profile information.
+Authenticated authors retain ownership of the Articles and Comments they
+create.
 
 ### Article Management
 
-Authors will be able to create, edit, and delete articles within the
-application. The system will offer a user-friendly editor. Additionally,
-authors will be able to categorize articles by assigning relevant topics to
-them.
+Authors must be able to create, edit, and delete Articles according to the
+access rules defined by this specification. Articles contain user-facing
+content and can be organized by assigning relevant Topics.
 
-### Topic Subscription
+### Topic Preferences and Subscriptions
 
-The application will include a subscription feature that allows users to
-subscribe to topics of interest. By subscribing to specific topics, users will
-receive notifications or updates whenever new articles are published in those
-categories. This feature will enhance user engagement and ensure that readers
-stay informed about the topics they find most valuable.
-
-Overall, the project aims to deliver an efficient blogging platform that caters
-to both authors and readers. By providing a seamless user experience and
-incorporating essential functionalities such as user authentication, article
-management, and topic subscriptions, the application will empower users to
-create, share, and explore engaging content within a well-structured and
-organized platform.
-
-Here is a starter repository template that may help:
-[Starter template](https://github.com/devsforge/django-tpl.git).
+Authenticated users must be able to maintain preferred Topics. The project also
+supports notification subscriptions for preferred Topics so implementations can
+notify interested users when relevant content is published.
 
 ## Challenge: Functional views
 
