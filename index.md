@@ -40,6 +40,13 @@ organized platform.
 Here is a starter repository template that may help:
 [Starter template](https://github.com/devsforge/django-tpl.git).
 
+## Educational progression
+
+The canonical, framework-neutral implementation sequence and completion
+criteria are documented in [learning.md](./learning.md). Framework-specific
+exercises may be added by individual courses, but they are not requirements of
+the Blog Site itself.
+
 ## Challenge: Functional views
 
 It's ok not to return **actual** content for now. Ensure all the routes are
@@ -407,14 +414,6 @@ project's database.
 - Article can be edited only by its author.
 - Article can be deleted only by its author.
 - Only authenticated users can comment on articles.
-
-## Challenge: Class-Based Views
-
-- Replace **all** existing views via `CBV`.
-- Existing functionality should not be corrupted.
-
-> [!NOTE]
-> It's ok to use built-in Django CBV if needed.
 
 ## Challenge: Serializers
 
