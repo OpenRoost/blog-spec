@@ -8,8 +8,8 @@ erDiagram
     article {
         string title
         text content
-        date created_at
-        date updated_at
+        datetime created_at
+        datetime updated_at
     }
 
     comment {
@@ -17,8 +17,13 @@ erDiagram
         text message
     }
 
-    article ||--|{ comment: contains
-    topic }|--o{ article: contains
-    topic }o--o{ user: prefers
+    user_topic_preference {
+        boolean notifications_enabled
+    }
+
+    topic }|--o{ article: categorizes
+    article ||--o{ comment: contains
     user ||--o{ article: writes
     user ||--o{ comment: writes
+    user ||--o{ user_topic_preference: has
+    topic ||--o{ user_topic_preference: selected_in
